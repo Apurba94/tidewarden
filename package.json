@@ -1,0 +1,11 @@
+{
+  "name": "tidewarden",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "Tower defence on a tidal shore: the sea rises and falls, flooding towers and opening water routes for raiders.",
+  "scripts": {
+    "test": "node --test"
+  }
+}
