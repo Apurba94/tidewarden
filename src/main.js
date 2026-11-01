@@ -4,7 +4,7 @@ import { Battle, CELL, COLS, ENEMIES, LAND, LEVELS, MAX_LEVEL, ORDER, ROAD, ROCK
 
 export const game = new Game({ id: "tidewarden", title: "Tidewarden", theme: { accent: "#22d3ee", bg: "#071521", bg2: "#0f2a3d", panel: "#14324a" }, defaults: { stars: [], endless: 0 } });
 const data = game.store.data;
-const X0 = 15, Y0 = 52;
+const X0 = 15;
 
 const HELP = [
   ["Hold the shore", "Raiders march down the road and longboats sail the channel. Each one that reaches your keep costs lives. Lose all 20 and the level is over."],
@@ -58,9 +58,9 @@ class BattleScene extends Scene {
     this.buildBar();
   }
   hidden() { this.paused = true; this.buildBar(); }
-  barY() { return Y0 + ROWS * CELL + 6; }
+  get y0() { return 52 + Math.max(0, (this.g.H - 80 - 52 - ROWS * CELL) / 2); }
   buildBar() {
-    const g = this.g, y = this.barY(), h = Math.max(56, g.H - y - 8), ui = this.ui;
+    const g = this.g, y = g.H - 76, h = 66, ui = this.ui;
     ui.clear();
     const s = this.sel;
     if (s && s.tower) {
@@ -83,8 +83,8 @@ class BattleScene extends Scene {
     }
   }
   down(p) {
-    if (p.y < Y0 || p.y >= Y0 + ROWS * CELL) return;
-    const c = Math.floor((p.x - X0) / CELL), r = Math.floor((p.y - Y0) / CELL);
+    if (p.y < this.y0 || p.y >= this.y0 + ROWS * CELL) return;
+    const c = Math.floor((p.x - X0) / CELL), r = Math.floor((p.y - this.y0) / CELL);
     const tower = this.b.towerAt(c, r);
     const g = this.b.cell(c, r);
     if (tower) this.sel = { c, r, tower };
@@ -96,9 +96,9 @@ class BattleScene extends Scene {
     const b = this.b, g = this.g;
     if (!this.paused) for (let i = 0; i < this.speed; i++) b.step(dt);
     for (const e of b.events) {
-      if (e.kind === "kill") { g.fx.burst(X0 + e.x, Y0 + e.y, e.color, e.boss ? 40 : 10, 100); g.fx.float(X0 + e.x, Y0 + e.y - 8, "+" + e.reward, g.theme.gold, 12); g.sound.play(e.boss ? "boom" : "hit"); if (e.boss) g.shake(0.4); }
+      if (e.kind === "kill") { g.fx.burst(X0 + e.x, this.y0 + e.y, e.color, e.boss ? 40 : 10, 100); g.fx.float(X0 + e.x, this.y0 + e.y - 8, "+" + e.reward, g.theme.gold, 12); g.sound.play(e.boss ? "boom" : "hit"); if (e.boss) g.shake(0.4); }
       if (e.kind === "leak") { g.sound.play("bad"); g.buzz(40); g.shake(0.15); }
-      if (e.kind === "gold") { g.fx.float(X0 + e.x, Y0 + e.y, "+" + e.amount, g.theme.gold, 14); g.sound.play("coin"); }
+      if (e.kind === "gold") { g.fx.float(X0 + e.x, this.y0 + e.y, "+" + e.amount, g.theme.gold, 14); g.sound.play("coin"); }
       if (e.kind === "tide") g.sound.tone(180, 0.6, { type: "sine", vol: 0.14, slide: 120 });
       if (e.kind === "wave") g.sound.play("power");
     }
@@ -151,7 +151,7 @@ class BattleScene extends Scene {
     c.fillStyle = "rgba(255,255,255,.6)";
     c.fillRect(196 + 184 * 0.6, 24, 2, 18);
     c.save();
-    c.translate(X0, Y0);
+    c.translate(X0, this.y0);
     const wet = `rgb(${20},${100 + Math.sin(t * 2) * 8},${150})`;
     for (let r = 0; r < ROWS; r++) {
       for (let col = 0; col < COLS; col++) {
@@ -196,13 +196,13 @@ class BattleScene extends Scene {
     c.restore();
     if (this.sel?.tower) {
       const tw = this.sel.tower;
-      text(c, `${TOWERS[tw.type].name}, level ${tw.lvl + 1}`, g.W / 2, Y0 - 6, { size: 11, color: g.theme.ink });
+      text(c, `${TOWERS[tw.type].name}, level ${tw.lvl + 1}`, g.W / 2, this.y0 - 6, { size: 11, color: g.theme.ink });
     } else if (this.sel) {
-      text(c, b.cell(this.sel.c, this.sel.r) === SHORE ? "Sand: floods at high tide" : "Dry land: always fires", g.W / 2, Y0 - 6, { size: 11, color: g.theme.ink });
+      text(c, b.cell(this.sel.c, this.sel.r) === SHORE ? "Sand: floods at high tide" : "Dry land: always fires", g.W / 2, this.y0 - 6, { size: 11, color: g.theme.ink });
     }
     if (this.paused) {
       c.fillStyle = "rgba(0,0,0,.55)";
-      c.fillRect(0, 0, g.W, Y0 + ROWS * CELL);
+      c.fillRect(0, 0, g.W, this.y0 + ROWS * CELL);
       text(c, "Paused", g.W / 2, 280, { size: 32, weight: 800 });
       text(c, "Tap Resume to carry on", g.W / 2, 318, { size: 14, color: g.theme.muted });
     }

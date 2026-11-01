@@ -392,7 +392,7 @@ export class Game {
     else if (!s.ui.up(p)) s.up(p);
   }
   buzz(ms) {
-    if (this.store.data.buzz !== false && navigator.vibrate) { try { navigator.vibrate(ms); } catch { /* unsupported */ } }
+    if (this.store.data.buzz !== false && navigator.vibrate && navigator.userActivation?.hasBeenActive !== false) { try { navigator.vibrate(ms); } catch { /* unsupported */ } }
   }
   shake(t = 0.25) { this.shakeT = Math.max(this.shakeT, t); }
   go(scene) {
